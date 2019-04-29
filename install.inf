@@ -1,0 +1,11 @@
+[info]
+title=HtmlPanel
+desc=Some description
+type=cudatext-plugin
+subdir=cuda_html_panel
+homepage=
+
+[item1]
+section=events
+events=on_caret,on_change_slow
+
