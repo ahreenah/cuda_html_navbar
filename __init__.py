@@ -21,6 +21,7 @@ class Command:
         button_proc(btn_id, BTN_SET_TEXT, text)
         def callbackf():
             try:
+                self.need_action=False
                 print(count-1)
                 coord=self.cors[count-1]
                 ed.set_caret(coord[1]+1,coord[0])
@@ -39,7 +40,7 @@ class Command:
     def __init__(self):
         self.cors=[]
         self.form=dlg_proc(0,DLG_CREATE)   
-        
+        self.need_action=True
         dlg_proc(self.form, DLG_PROP_SET, prop={                       
           'h':20,
         })                                              
@@ -65,48 +66,50 @@ class Command:
         file_open(fn_config)
         
     def on_caret(self, ed_self):
-        ignore_list=['meta','br','hr']
-        print('caret')
-        strs=[]
-        self.cors=[]
-        snum=0
-        for s in ed_self.get_text_substr(0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]).split('\n'):
-            flag=0
-            cs=''
-            colnum=0
-            for i in s:
-                if i=='<':
-                    flag=1
-                elif i=='>':
-                    flag=0
-                    cs=cs.split(' ')[0]
-                    if not cs in ignore_list:
-                        strs.append(cs)
-                        self.cors.append([snum,colnum])
-                    cs=''
-                    # ещё код
-                elif flag==1:
-                    cs+=i
-                colnum+=1
-            i=0
-            while i<len(strs):
-                if strs[i][0]=='/':
-                    tag=strs[i][1:]
-                    j=i
-                    while j>=0:
-                        j-=1
-                        if strs[j]==tag:
-                            break
-                    if j>=0:
-                        while j<=i:
-                            i-=1
-                            strs.pop(j)
-                            self.cors.pop(j)
-                i+=1
-            print('RESULT '+str(strs))
-            self.set_buttons(strs)
-            snum+=1
-            print(self.cors)
+        if self.need_action:
+            ignore_list=['meta','br','hr']
+            print('caret')
+            strs=[]
+            self.cors=[]
+            snum=0
+            for s in ed_self.get_text_substr(0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]).split('\n'):
+                flag=0
+                cs=''
+                colnum=0
+                for i in s:
+                    if i=='<':
+                        flag=1
+                    elif i=='>':
+                        flag=0
+                        cs=cs.split(' ')[0]
+                        if not cs in ignore_list:
+                            strs.append(cs)
+                            self.cors.append([snum,colnum])
+                        cs=''
+                        # ещё код
+                    elif flag==1:
+                        cs+=i
+                    colnum+=1
+                i=0
+                while i<len(strs):
+                    if strs[i][0]=='/':
+                        tag=strs[i][1:]
+                        j=i
+                        while j>=0:
+                            j-=1
+                            if strs[j]==tag:
+                                break
+                        if j>=0:
+                            while j<=i:
+                                i-=1
+                                strs.pop(j)
+                                self.cors.pop(j)
+                    i+=1
+                print('RESULT '+str(strs))
+                self.set_buttons(strs)
+                snum+=1
+                print(self.cors)
+        self.need_action=True
         pass
         
     def on_change_slow(self, ed_self):
