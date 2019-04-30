@@ -94,7 +94,9 @@ class Command:
         print('ID: '+str(self.tb_id))             
         self.set_buttons(['a','b','b','c'])
         dlg_proc(self.form,DLG_DOCK, index=0, prop='T')                                 
-        dlg_proc(self.form,DLG_SHOW_NONMODAL)                              
+        dlg_proc(self.form,DLG_SHOW_NONMODAL)           
+        dlg_proc(self.form,TREE_THEME)
+        toolbar_proc(toolbar,TOOLBAR_THEME)                   
         pass 
         
     def config(self):
