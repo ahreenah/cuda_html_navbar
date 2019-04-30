@@ -3,14 +3,6 @@ from cudatext import *
 
 fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_panel.ini')
 
-option_int = 100
-option_bool = True
-
-def bool_to_str(v): return '1' if v else '0'
-def str_to_bool(s): return s=='1'
-
-
-
 class Command:
     def add_button(self,text):
         toolbar_proc(self.tb_id, TOOLBAR_ADD_ITEM)
@@ -37,12 +29,54 @@ class Command:
             self.add_button(i)
             j+=1
     
+    def parse_html(self,text):
+        ignore_list=['meta','br','hr']
+        strs=[]
+        snum=0
+        for s in text.split('\n'):
+            flag=0
+            cs=''
+            colnum=0
+            for i in s:
+                if i=='<':
+                    flag=1
+                elif i=='>':
+                    flag=0
+                    cs=cs.split(' ')[0]
+                    if not cs in ignore_list:
+                        strs.append(cs)
+                        self.cors.append([snum,colnum])
+                    cs=''
+                    # ещё код
+                elif flag==1:
+                    cs+=i
+                colnum+=1
+            i=0
+            while i<len(strs):
+                if strs[i][0]=='/':
+                    tag=strs[i][1:]
+                    j=i
+                    while j>=0:
+                        j-=1
+                        if strs[j]==tag:
+                            break
+                    if j>=0:
+                        while j<=i:
+                            i-=1
+                            strs.pop(j)
+                            self.cors.pop(j)
+                i+=1
+            print('RESULT '+str(strs))
+            self.set_buttons(strs)
+            snum+=1
+            print(self.cors)
+    
     def __init__(self):
         self.cors=[]
         self.form=dlg_proc(0,DLG_CREATE)   
         self.need_action=True
         dlg_proc(self.form, DLG_PROP_SET, prop={                       
-          'h':20,
+          'h':25,
         })                                              
         toolbar = dlg_proc(self.form, DLG_CTL_ADD, 'toolbar')
         dlg_proc(self.form, DLG_CTL_PROP_SET, index=toolbar, prop={
@@ -67,48 +101,12 @@ class Command:
         
     def on_caret(self, ed_self):
         if self.need_action:
-            ignore_list=['meta','br','hr']
+            
             print('caret')
-            strs=[]
+            
             self.cors=[]
-            snum=0
-            for s in ed_self.get_text_substr(0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]).split('\n'):
-                flag=0
-                cs=''
-                colnum=0
-                for i in s:
-                    if i=='<':
-                        flag=1
-                    elif i=='>':
-                        flag=0
-                        cs=cs.split(' ')[0]
-                        if not cs in ignore_list:
-                            strs.append(cs)
-                            self.cors.append([snum,colnum])
-                        cs=''
-                        # ещё код
-                    elif flag==1:
-                        cs+=i
-                    colnum+=1
-                i=0
-                while i<len(strs):
-                    if strs[i][0]=='/':
-                        tag=strs[i][1:]
-                        j=i
-                        while j>=0:
-                            j-=1
-                            if strs[j]==tag:
-                                break
-                        if j>=0:
-                            while j<=i:
-                                i-=1
-                                strs.pop(j)
-                                self.cors.pop(j)
-                    i+=1
-                print('RESULT '+str(strs))
-                self.set_buttons(strs)
-                snum+=1
-                print(self.cors)
+            
+            self.parse_html(ed_self.get_text_substr(0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]))
         self.need_action=True
         pass
         

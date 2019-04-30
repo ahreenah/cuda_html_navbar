@@ -1,9 +1,9 @@
 [info]
 title=HtmlPanel
-desc=Some description
+desc=HTML navbar
 type=cudatext-plugin
 subdir=cuda_html_panel
-homepage=
+homepage=https://github.com/medvosa/cuda_html_navbar
 
 [item1]
 section=events
