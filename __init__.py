@@ -16,9 +16,17 @@ class Command:
                 self.need_action=False
                 print(count-1)
                 coord=self.cors[count-1]
-                ed.set_caret(coord[1]+1,coord[0])
+                line=ed.get_text_line(coord[0])
+                new_x=coord[1]
+                while new_x>0:
+                    if line[new_x]=='<':
+                        break
+                    new_x-=1
+                new_x+=1
+                ed.set_caret(new_x,coord[0])
             finally:
                 pass
+        button_proc(btn_id,BTN_SET_KIND,BTNKIND_TEXT_ONLY)
         button_proc(btn_id, BTN_SET_DATA1, callbackf)
         toolbar_proc(self.tb_id, TOOLBAR_UPDATE)
     
@@ -68,15 +76,26 @@ class Command:
                 i+=1
             print('RESULT '+str(strs))
             self.set_buttons(strs)
+            self.strs=strs
             snum+=1
             print(self.cors)
     
     def __init__(self):
+        self.lexer_list=['HTML']
         self.cors=[]
         self.form=dlg_proc(0,DLG_CREATE)   
         self.need_action=True
+        theme=app_proc(PROC_THEME_UI_DATA_GET,'')
+        bg_color=0
+        for i in theme:
+            if i['name']=='EdTextBg':
+                bg_color=i['color']
+                break
+        if not bg_color:
+            bg_color=333333;
         dlg_proc(self.form, DLG_PROP_SET, prop={                       
           'h':25,
+          'color':bg_color,
         })                                              
         toolbar = dlg_proc(self.form, DLG_CTL_ADD, 'toolbar')
         toolbar_proc(toolbar,TOOLBAR_THEME)
@@ -94,13 +113,37 @@ class Command:
         print('ID: '+str(self.tb_id))             
         self.set_buttons(['a','b','b','c'])
         dlg_proc(self.form,DLG_DOCK, index=0, prop='T')                                 
-        dlg_proc(self.form,DLG_SHOW_NONMODAL)           
-        dlg_proc(self.form,TREE_THEME)
+        dlg_proc(self.form,DLG_SHOW_NONMODAL)
+        #dlg_proc(self.form,TREE_THEME)
         toolbar_proc(toolbar,TOOLBAR_THEME)                   
         pass 
         
     def config(self):
         file_open(fn_config)
+    
+    def on_open(self, name):
+        print('opened file')
+        if ed.get_prop(PROP_LEXER_FILE,'') in self.lexer_list:
+            dlg_proc(self.form, DLG_PROP_SET, prop={                       
+              'h':25,
+            })
+        else:
+            dlg_proc(self.form, DLG_PROP_SET, prop={                       
+              'h':0,
+            })
+            
+    def on_lexer(self,ed_self):
+        print('changed tab '+ed.get_prop(PROP_LEXER_FILE,''))
+        if ed.get_prop(PROP_LEXER_FILE,'') in self.lexer_list:
+            dlg_proc(self.form, DLG_PROP_SET, prop={                       
+              'h':25,
+            })
+        else:
+            print('hiding')
+            dlg_proc(self.form, DLG_PROP_SET, prop={                       
+              'h':0,
+            })
+        
         
     def on_caret(self, ed_self):
         if self.need_action:
