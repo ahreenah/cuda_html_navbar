@@ -79,6 +79,7 @@ class Command:
           'h':25,
         })                                              
         toolbar = dlg_proc(self.form, DLG_CTL_ADD, 'toolbar')
+        toolbar_proc(toolbar,TOOLBAR_THEME)
         dlg_proc(self.form, DLG_CTL_PROP_SET, index=toolbar, prop={
           'name': 'tb',
           'x': 0,
