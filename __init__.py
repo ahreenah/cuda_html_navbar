@@ -85,7 +85,7 @@ class Command:
         self.lexer_list=lexerstring.split(',')
         
         self.cors=[]
-        self.form=dlg_proc(ed.get_prop(PROP_HANDLE_SELF),DLG_CREATE)   
+        self.form=dlg_proc(0,DLG_CREATE)   
         self.need_action=True
         theme=app_proc(PROC_THEME_UI_DATA_GET,'')
         bg_color=0
@@ -114,7 +114,7 @@ class Command:
         self.tb_id = dlg_proc(self.form, DLG_CTL_HANDLE, index=toolbar)
         print('ID: '+str(self.tb_id))             
         self.set_buttons(['a','b','b','c'])
-        dlg_proc(self.form,DLG_DOCK, index=0, prop='T')                                 
+        dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_SELF), prop='T')                                 
         dlg_proc(self.form,DLG_SHOW_NONMODAL)
         #dlg_proc(self.form,TREE_THEME)
         toolbar_proc(toolbar,TOOLBAR_THEME)                   
