@@ -7,7 +7,6 @@ class Command:
     def add_button(self,text):
         toolbar_proc(self.tb_id, TOOLBAR_ADD_ITEM)
         count = toolbar_proc(self.tb_id, TOOLBAR_GET_COUNT)
-        print('COUNT: ' + str(count))
         btn_id = toolbar_proc(self.tb_id, TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
         button_proc(btn_id, BTN_SET_KIND, BTNKIND_TEXT_ICON_HORZ)
         button_proc(btn_id, BTN_SET_TEXT, text)
@@ -51,7 +50,7 @@ class Command:
                 elif i=='>':
                     flag=0
                     cs=cs.split(' ')[0]
-                    if not cs in ignore_list:
+                    if not cs in ignore_list and not cs[0]=='!':
                         strs.append(cs)
                         self.cors.append([snum,colnum])
                     cs=''
@@ -81,9 +80,12 @@ class Command:
             print(self.cors)
     
     def __init__(self):
-        self.lexer_list=['HTML']
+        lexerstring=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
+        print('LEXER LIST '+fn_config+' '+lexerstring)
+        self.lexer_list=lexerstring.split(',')
+        
         self.cors=[]
-        self.form=dlg_proc(0,DLG_CREATE)   
+        self.form=dlg_proc(ed.get_prop(PROP_HANDLE_SELF),DLG_CREATE)   
         self.need_action=True
         theme=app_proc(PROC_THEME_UI_DATA_GET,'')
         bg_color=0
@@ -144,18 +146,15 @@ class Command:
               'h':0,
             })
         
-        
+    
+    def on_tab_change(self,ed_self):
+        self.on_lexer(ed_self)
+    
     def on_caret(self, ed_self):
         if self.need_action:
-            
-            print('caret')
-            
             self.cors=[]
-            
             self.parse_html(ed_self.get_text_substr(0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]))
         self.need_action=True
-        pass
         
     def on_change_slow(self, ed_self):
-        print('change slow') 
-        pass
+        print('change slow')

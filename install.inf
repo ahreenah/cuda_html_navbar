@@ -1,11 +1,10 @@
 [info]
-title=HtmlPanel
-desc=HTML navbar
+title=HTML Navigation Bar
+desc=In HTML files, plugin shows navigational breadcrumb bar on the top
 type=cudatext-plugin
-subdir=cuda_html_panel
+subdir=cuda_html_navbar
 homepage=https://github.com/medvosa/cuda_html_navbar
 
 [item1]
 section=events
-events=on_caret,on_change_slow,on_open,on_lexer
-
+events=on_caret,on_change_slow,on_open,on_lexer,on_tab_change
