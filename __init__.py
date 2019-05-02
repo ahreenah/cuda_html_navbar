@@ -32,6 +32,7 @@ class Command:
     def set_buttons(self,buttons):
         toolbar_proc(self.tb_id,TOOLBAR_DELETE_ALL)
         j=0
+        print(buttons)
         for i in buttons:
             self.add_button(i)
             j+=1
@@ -50,9 +51,10 @@ class Command:
                 elif i=='>':
                     flag=0
                     cs=cs.split(' ')[0]
-                    if not cs in ignore_list and not cs[0]=='!':
-                        strs.append(cs)
-                        self.cors.append([snum,colnum])
+                    if not cs in ignore_list and len(cs)>0:
+                        if not cs[0]=='!':
+                            strs.append(cs)
+                            self.cors.append([snum,colnum])
                     cs=''
                 elif flag==1:
                     cs+=i
@@ -92,7 +94,7 @@ class Command:
         if not bg_color:
             bg_color=333333;
         dlg_proc(self.form, DLG_PROP_SET, prop={                       
-          'h':25,
+          'h':0,
           'color':bg_color,
         })                                              
         toolbar = dlg_proc(self.form, DLG_CTL_ADD, 'toolbar')
@@ -109,7 +111,7 @@ class Command:
         
         self.tb_id = dlg_proc(self.form, DLG_CTL_HANDLE, index=toolbar)
         self.set_buttons([])
-        dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_SELF), prop='T')                                 
+        dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')                                 
         dlg_proc(self.form,DLG_SHOW_NONMODAL)
         #dlg_proc(self.form,TREE_THEME)
         toolbar_proc(toolbar,TOOLBAR_THEME)                   
