@@ -1,7 +1,7 @@
 import os
 from cudatext import *
 
-fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_panel.ini')
+fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_navbar.ini')
 
 class Command:
     def add_button(self,text):
@@ -54,7 +54,6 @@ class Command:
                         strs.append(cs)
                         self.cors.append([snum,colnum])
                     cs=''
-                    # ещё код
                 elif flag==1:
                     cs+=i
                 colnum+=1
@@ -80,9 +79,8 @@ class Command:
             print(self.cors)
     
     def __init__(self):
-        lexerstring=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
-        print('LEXER LIST '+fn_config+' '+lexerstring)
-        self.lexer_list=lexerstring.split(',')
+        self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
+        self.lexer_list=self.option_lexers.split(',')
         
         self.cors=[]
         self.form=dlg_proc(0,DLG_CREATE)   
@@ -121,11 +119,13 @@ class Command:
         pass 
         
     def config(self):
+        ini_write(fn_config, 'op', 'lexers', self.option_lexers)
         file_open(fn_config)
     
     def on_open(self, name):
-        print('opened file')
-        if ed.get_prop(PROP_LEXER_FILE,'') in self.lexer_list:
+        lexer=ed.get_prop(PROP_LEXER_FILE,'')
+        if not lexer:return
+        if lexer in self.lexer_list:
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
               'h':25,
             })
@@ -135,13 +135,13 @@ class Command:
             })
             
     def on_lexer(self,ed_self):
-        print('changed tab '+ed.get_prop(PROP_LEXER_FILE,''))
-        if ed.get_prop(PROP_LEXER_FILE,'') in self.lexer_list:
+        lexer=ed.get_prop(PROP_LEXER_FILE,'')
+        if not lexer:return
+        if lexer in self.lexer_list:
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
               'h':25,
             })
         else:
-            print('hiding')
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
               'h':0,
             })
@@ -157,4 +157,4 @@ class Command:
         self.need_action=True
         
     def on_change_slow(self, ed_self):
-        print('change slow')
+        pass
