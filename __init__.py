@@ -41,7 +41,31 @@ class Command:
         ignore_list=['meta','br','hr']
         strs=[]
         snum=0
-        for s in text.split('\n'):
+        arrs=text.split('<!--')
+        text2=''
+        ind=0
+        for i in arrs:
+            text2+=' '*4
+            if '-->' in i :
+                for j in i.split('-->')[0]:
+                    if j =='\n':
+                        text2+='\n'
+                    else:
+                        text2+=' '
+            elif ind==len(arrs)-1:
+                for j in i.split('-->')[0]:
+                    if j =='\n':
+                        text2+='\n'
+                    else:
+                        text2+=' '
+            else:
+                for j in i:
+                    text2+=j
+            text2+=' '*3      
+            if len(i.split('-->'))>1:
+                text2+=i.split('-->')[1]
+            ind+=1
+        for s in text2.split('\n'):
             flag=0
             cs=''
             colnum=0
