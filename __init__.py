@@ -111,7 +111,7 @@ class Command:
         
         self.tb_id = dlg_proc(self.form, DLG_CTL_HANDLE, index=toolbar)
         print('ID: '+str(self.tb_id))             
-        self.set_buttons(['a','b','b','c'])
+        self.set_buttons([])
         dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_SELF), prop='T')                                 
         dlg_proc(self.form,DLG_SHOW_NONMODAL)
         #dlg_proc(self.form,TREE_THEME)
