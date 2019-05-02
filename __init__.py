@@ -3,6 +3,7 @@ from cudatext import *
 
 fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_navbar.ini')
 
+
 class Command:
     def add_button(self,text):
         toolbar_proc(self.tb_id, TOOLBAR_ADD_ITEM)
@@ -13,7 +14,6 @@ class Command:
         def callbackf():
             try:
                 self.need_action=False
-                print(count-1)
                 coord=self.cors[count-1]
                 line=ed.get_text_line(coord[0])
                 new_x=coord[1]
@@ -72,11 +72,9 @@ class Command:
                             strs.pop(j)
                             self.cors.pop(j)
                 i+=1
-            print('RESULT '+str(strs))
             self.set_buttons(strs)
             self.strs=strs
             snum+=1
-            print(self.cors)
     
     def __init__(self):
         self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
@@ -110,7 +108,6 @@ class Command:
         }) 
         
         self.tb_id = dlg_proc(self.form, DLG_CTL_HANDLE, index=toolbar)
-        print('ID: '+str(self.tb_id))             
         self.set_buttons([])
         dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_SELF), prop='T')                                 
         dlg_proc(self.form,DLG_SHOW_NONMODAL)
