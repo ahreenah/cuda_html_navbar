@@ -1,5 +1,6 @@
 import os
 from cudatext import *
+import re
 
 fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_navbar.ini')
 
@@ -7,14 +8,19 @@ fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_navbar.ini')
 class Command:
     def add_button(self,text):
         toolbar_proc(self.tb_id, TOOLBAR_ADD_ITEM)
-        count = toolbar_proc(self.tb_id, TOOLBAR_GET_COUNT)
+        count = self.count_buttons
+        self.count_buttons+=1
         btn_id = toolbar_proc(self.tb_id, TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
-        button_proc(btn_id, BTN_SET_KIND, BTNKIND_TEXT_ICON_HORZ)
+        if btn_id:
+            self.buttons.append(btn_id)
         button_proc(btn_id, BTN_SET_TEXT, text)
         def callbackf():
             try:
                 self.need_action=False
-                coord=self.cors[count-1]
+                print(self.buttons_hidden)
+                print(count-1-self.buttons_hidden)
+                #line=ed.get_text_line(coord[0]))
+                coord=self.cors[count-1-self.buttons_hidden]
                 line=ed.get_text_line(coord[0])
                 new_x=coord[1]
                 while new_x>0:
@@ -27,44 +33,96 @@ class Command:
                 pass
         button_proc(btn_id,BTN_SET_KIND,BTNKIND_TEXT_ONLY)
         button_proc(btn_id, BTN_SET_DATA1, callbackf)
-        toolbar_proc(self.tb_id, TOOLBAR_UPDATE)
     
     def set_buttons(self,buttons):
-        toolbar_proc(self.tb_id,TOOLBAR_DELETE_ALL)
+        #print(self.buttons)
         j=0
-        print(buttons)
-        for i in buttons:
-            self.add_button(i)
+        for i in self.buttons:
+            # print(i)
+            if j>len(buttons):
+                button_proc(i,BTN_SET_VISIBLE,False)
+                self.buttons_hidden+=1
             j+=1
+        #toolbar_proc(self.tb_id,TOOLBAR_DELETE_ALL)
+        j=0
+        #print(buttons)
+        for i in buttons:
+            if j>=len(self.buttons):
+                self.add_button(i)
+            else:
+                button_proc(self.buttons[j],BTN_SET_VISIBLE,True)
+                count = self.count_buttons
+                def callbackf():
+                    try:
+                        self.need_action=False
+                        print(self.buttons_hidden)
+                        print(count-1-self.buttons_hidden)
+                        #line=ed.get_text_line(coord[0]))
+                        coord=self.cors[count-1-self.buttons_hidden]
+                        line=ed.get_text_line(coord[0])
+                        new_x=coord[1]
+                        while new_x>0:
+                            if line[new_x]=='<':
+                                break
+                            new_x-=1
+                        new_x+=1
+                        ed.set_caret(new_x,coord[0])
+                    finally:
+                        pass
+                button_proc(self.buttons[j],BTN_SET_DATA1,callbackf)
+                button_proc(self.buttons[j],BTN_SET_TEXT,buttons[j])
+            j+=1
+        toolbar_proc(self.tb_id, TOOLBAR_UPDATE)
     
     def parse_html(self,text):
         ignore_list=['meta','br','hr']
         strs=[]
         snum=0
         arrs=text.split('<!--')
+        #print(arrs)
         text2=''
         ind=0
+        closed = True
         for i in arrs:
+            closed=False
+            if ind==0:
+                closed=True
             text2+=' '*4
             if '-->' in i :
+                print('kp1')
                 for j in i.split('-->')[0]:
                     if j =='\n':
                         text2+='\n'
                     else:
                         text2+=' '
-            elif ind==len(arrs)-1:
-                for j in i.split('-->')[0]:
-                    if j =='\n':
-                        text2+='\n'
-                    else:
-                        text2+=' '
-            else:
-                for j in i:
+                for j in i.split('-->')[1]:
                     text2+=j
-            text2+=' '*3      
-            if len(i.split('-->'))>1:
-                text2+=i.split('-->')[1]
+                closed = True
+            elif (ind==0) or closed:
+                print('kp3')
+                for j in i:
+                    #print(j)
+                    text2+=j
+                    #print('first')
+            elif ind==len(arrs)-1:
+                print('kp2')
+                for j in i.split('-->')[0]:
+                    if j =='\n':
+                        text2+='\n'
+                    else:
+                        text2+=' '
+                
+                
+            else:
+                print('kp4')
+                text2+=' '*3      
+                if len(i.split('-->'))>1:
+                    text2+=i.split('-->')[1]
             ind+=1
+        #for i in arrs:
+        #    text2+=i
+        print('strs = '+str(arrs))
+        print('text2 = '+text2)
         for s in text2.split('\n'):
             flag=0
             cs=''
@@ -98,17 +156,20 @@ class Command:
                             strs.pop(j)
                             self.cors.pop(j)
                 i+=1
+            i=0
+            while i<len(strs):
+                if strs[i]=='script':
+                    j=i+1
+                    while j<len(strs):
+                        strs.pop(j)
+                        self.cors.pop(j)
+                        j+=1
+                i+=1
             self.set_buttons(strs)
             self.strs=strs
             snum+=1
     
-    def __init__(self):
-        self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
-        self.lexer_list=self.option_lexers.split(',')
-        
-        self.cors=[]
-        self.form=dlg_proc(0,DLG_CREATE)   
-        self.need_action=True
+    def get_color(self):
         theme=app_proc(PROC_THEME_UI_DATA_GET,'')
         bg_color=0
         for i in theme:
@@ -116,7 +177,19 @@ class Command:
                 bg_color=i['color']
                 break
         if not bg_color:
-            bg_color=333333;
+            bg_color=333333
+        return bg_color
+    
+    def __init__(self):
+        self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
+        self.lexer_list=self.option_lexers.split(',')
+        self.buttons_hidden=0
+        self.count_buttons=0
+        self.buttons=[]
+        self.cors=[]
+        self.form=dlg_proc(0,DLG_CREATE)   
+        self.need_action=True
+        bg_color=self.get_color()
         dlg_proc(self.form, DLG_PROP_SET, prop={                       
           'h':0,
           'color':bg_color,
@@ -148,26 +221,24 @@ class Command:
     def on_open(self, name):
         lexer=ed.get_prop(PROP_LEXER_FILE,'')
         if not lexer:return
-        if lexer in self.lexer_list:
+        correct_lexer=False
+        for i in self.lexer_list:
+            #  'HTML[a-zA-Z ]*'
+            pattern=re.compile(i)   
+            if pattern.fullmatch(lexer):
+                correct_lexer=True
+        if correct_lexer:
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
-              'h':25,
-            })
+                'h':25,
+              })
         else:
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
               'h':0,
             })
-            
+                    
     def on_lexer(self,ed_self):
-        lexer=ed.get_prop(PROP_LEXER_FILE,'')
-        if not lexer:return
-        if lexer in self.lexer_list:
-            dlg_proc(self.form, DLG_PROP_SET, prop={                       
-              'h':25,
-            })
-        else:
-            dlg_proc(self.form, DLG_PROP_SET, prop={                       
-              'h':0,
-            })
+        self.on_open('')
+        pass
         
     
     def on_tab_change(self,ed_self):
@@ -176,7 +247,9 @@ class Command:
     def on_caret(self, ed_self):
         if self.need_action:
             self.cors=[]
-            self.parse_html(ed_self.get_text_substr(0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]))
+            x1,y1,x2,y2=0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]
+            self.parse_html(ed_self.get_text_substr(x1,y1,x2,y2))
+            
         self.need_action=True
         
     def on_change_slow(self, ed_self):
