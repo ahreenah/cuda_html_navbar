@@ -13,7 +13,7 @@ class Command:
         btn_id = toolbar_proc(self.tb_id, TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
         if btn_id:
             self.buttons.append(btn_id)
-        button_proc(btn_id, BTN_SET_TEXT, text)
+        #button_proc(btn_id, BTN_SET_TEXT, text)
         def callbackf():
             try:
                 self.need_action=False
@@ -46,19 +46,19 @@ class Command:
         #toolbar_proc(self.tb_id,TOOLBAR_DELETE_ALL)
         j=0
         #print(buttons)
+        index=0
         for i in buttons:
             if j>=len(self.buttons):
                 self.add_button(i)
             else:
                 button_proc(self.buttons[j],BTN_SET_VISIBLE,True)
-                count = self.count_buttons
-                def callbackf():
+                def callbackf(tindex=index):
                     try:
                         self.need_action=False
-                        print(self.buttons_hidden)
-                        print(count-1-self.buttons_hidden)
                         #line=ed.get_text_line(coord[0]))
-                        coord=self.cors[count-1-self.buttons_hidden]
+                        print('J: '+str(j))
+                        print('TINDEX: '+str(tindex))
+                        coord=self.cors[tindex]
                         line=ed.get_text_line(coord[0])
                         new_x=coord[1]
                         while new_x>0:
@@ -69,6 +69,7 @@ class Command:
                         ed.set_caret(new_x,coord[0])
                     finally:
                         pass
+                index+=1
                 button_proc(self.buttons[j],BTN_SET_DATA1,callbackf)
                 button_proc(self.buttons[j],BTN_SET_TEXT,buttons[j])
             j+=1
