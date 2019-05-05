@@ -13,12 +13,9 @@ class Command:
         btn_id = toolbar_proc(self.tb_id, TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
         if btn_id:
             self.buttons.append(btn_id)
-        #button_proc(btn_id, BTN_SET_TEXT, text)
         def callbackf():
             try:
                 self.need_action=False
-                print(count-1-self.buttons_hidden)
-                #line=ed.get_text_line(coord[0]))
                 coord=self.cors[count-1-self.buttons_hidden]
                 line=ed.get_text_line(coord[0])
                 new_x=coord[1]
