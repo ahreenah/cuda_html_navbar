@@ -159,7 +159,7 @@ class Command:
         return bg_color
     
     def __init__(self):
-        self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
+        self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML.*|XML')
         self.buttons_hidden=0
         self.count_buttons=0
         self.buttons=[]
