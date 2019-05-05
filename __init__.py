@@ -233,8 +233,8 @@ class Command:
     def on_caret(self, ed_self):
         if self.need_action:
             self.cors=[]
-            x1,y1,x2,y2=0,0,ed_self.get_carets()[0][0],ed_self.get_carets()[0][1]
-            self.parse_html(ed_self.get_text_substr(x1,y1,x2,y2))
+            x1,y1,x2,y2=ed_self.get_carets()[0]
+            self.parse_html(ed_self.get_text_substr(0,0,x1,y1))
             
         self.need_action=True
         
