@@ -235,8 +235,4 @@ class Command:
             self.cors=[]
             x1,y1,x2,y2=ed_self.get_carets()[0]
             self.parse_html(ed_self.get_text_substr(0,0,x1,y1))
-            
         self.need_action=True
-        
-    def on_change_slow(self, ed_self):
-        pass
