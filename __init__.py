@@ -27,8 +27,9 @@ class Command:
                 ed.set_caret(new_x,coord[0])
             finally:
                 pass
-        button_proc(btn_id,BTN_SET_KIND,BTNKIND_TEXT_ONLY)
-        button_proc(btn_id, BTN_SET_DATA1, callbackf)
+        if btn_id:
+            button_proc(btn_id,BTN_SET_KIND,BTNKIND_TEXT_ONLY)
+            button_proc(btn_id, BTN_SET_DATA1, callbackf)
     
     def set_buttons(self,buttons):
         j=0
