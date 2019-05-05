@@ -17,7 +17,6 @@ class Command:
         def callbackf():
             try:
                 self.need_action=False
-                print(self.buttons_hidden)
                 print(count-1-self.buttons_hidden)
                 #line=ed.get_text_line(coord[0]))
                 coord=self.cors[count-1-self.buttons_hidden]
@@ -35,17 +34,13 @@ class Command:
         button_proc(btn_id, BTN_SET_DATA1, callbackf)
     
     def set_buttons(self,buttons):
-        #print(self.buttons)
         j=0
         for i in self.buttons:
-            # print(i)
             if j>len(buttons):
                 button_proc(i,BTN_SET_VISIBLE,False)
                 self.buttons_hidden+=1
             j+=1
-        #toolbar_proc(self.tb_id,TOOLBAR_DELETE_ALL)
         j=0
-        #print(buttons)
         index=0
         for i in buttons:
             if j>=len(self.buttons):
@@ -55,9 +50,6 @@ class Command:
                 def callbackf(tindex=index):
                     try:
                         self.need_action=False
-                        #line=ed.get_text_line(coord[0]))
-                        print('J: '+str(j))
-                        print('TINDEX: '+str(tindex))
                         coord=self.cors[tindex]
                         line=ed.get_text_line(coord[0])
                         new_x=coord[1]
@@ -80,7 +72,6 @@ class Command:
         strs=[]
         snum=0
         arrs=text.split('<!--')
-        #print(arrs)
         text2=''
         ind=0
         closed = True
@@ -90,7 +81,6 @@ class Command:
                 closed=True
             text2+=' '*4
             if '-->' in i :
-                print('kp1')
                 for j in i.split('-->')[0]:
                     if j =='\n':
                         text2+='\n'
@@ -100,30 +90,19 @@ class Command:
                     text2+=j
                 closed = True
             elif (ind==0) or closed:
-                print('kp3')
                 for j in i:
-                    #print(j)
                     text2+=j
-                    #print('first')
             elif ind==len(arrs)-1:
-                print('kp2')
                 for j in i.split('-->')[0]:
                     if j =='\n':
                         text2+='\n'
                     else:
                         text2+=' '
-                
-                
             else:
-                print('kp4')
                 text2+=' '*3      
                 if len(i.split('-->'))>1:
                     text2+=i.split('-->')[1]
             ind+=1
-        #for i in arrs:
-        #    text2+=i
-        print('strs = '+str(arrs))
-        print('text2 = '+text2)
         for s in text2.split('\n'):
             flag=0
             cs=''
@@ -193,6 +172,7 @@ class Command:
         bg_color=self.get_color()
         dlg_proc(self.form, DLG_PROP_SET, prop={                       
           'h':0,
+          'visible':False,
           'color':bg_color,
         })                                              
         toolbar = dlg_proc(self.form, DLG_CTL_ADD, 'toolbar')
@@ -231,10 +211,12 @@ class Command:
         if correct_lexer:
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
                 'h':25,
+                'visible':True,
               })
         else:
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
               'h':0,
+              'visible':True,
             })
                     
     def on_lexer(self,ed_self):
@@ -244,6 +226,9 @@ class Command:
     
     def on_tab_change(self,ed_self):
         self.on_lexer(ed_self)
+        dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')                                 
+        dlg_proc(self.form,DLG_SHOW_NONMODAL)
+        self.on_caret(ed_self)
     
     def on_caret(self, ed_self):
         if self.need_action:
