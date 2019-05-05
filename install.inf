@@ -11,6 +11,6 @@ events=on_caret,on_change_slow,on_open,on_lexer,on_tab_change
 
 [item2]
 section=commands
-caption=HTML navigation bar\Config
+caption=HTML Navigation Bar\Config
 method=config
 menu=o
