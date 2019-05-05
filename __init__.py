@@ -160,7 +160,6 @@ class Command:
     
     def __init__(self):
         self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML,HTML Diafan')
-        self.lexer_list=self.option_lexers.split(',')
         self.buttons_hidden=0
         self.count_buttons=0
         self.buttons=[]
@@ -201,11 +200,9 @@ class Command:
         lexer=ed.get_prop(PROP_LEXER_FILE,'')
         if not lexer:return
         correct_lexer=False
-        for i in self.lexer_list:
-            #  'HTML[a-zA-Z ]*'
-            pattern=re.compile(i)   
-            if pattern.fullmatch(lexer):
-                correct_lexer=True
+        pattern=re.compile(self.option_lexers)   
+        if pattern.fullmatch(lexer):
+               correct_lexer=True
         if correct_lexer:
             dlg_proc(self.form, DLG_PROP_SET, prop={                       
                 'h':25,
