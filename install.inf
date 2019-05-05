@@ -14,6 +14,3 @@ section=commands
 caption=HTML navigation bar\Config
 method=config
 menu=o
-
-[item3]
-lexers=HTML* XML
