@@ -7,10 +7,10 @@ fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_navbar.ini')
 
 class Command:
     def add_button(self,text):
-        toolbar_proc(self.tb_id, TOOLBAR_ADD_ITEM)
+        toolbar_proc(self.tb_id[0], TOOLBAR_ADD_ITEM)
         count = self.count_buttons
         self.count_buttons+=1
-        btn_id = toolbar_proc(self.tb_id, TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
+        btn_id = toolbar_proc(self.tb_id[0], TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
         if btn_id:
             self.buttons.append(btn_id)
         def callbackf():
@@ -63,10 +63,10 @@ class Command:
                 button_proc(self.buttons[j],BTN_SET_DATA1,callbackf)
                 button_proc(self.buttons[j],BTN_SET_TEXT,buttons[j])
             j+=1
-        toolbar_proc(self.tb_id, TOOLBAR_UPDATE)
+        toolbar_proc(self.tb_id[self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]]], TOOLBAR_UPDATE)
     
     def parse_html(self,text):
-        ignore_list=['meta','br','hr']
+        ignore_list=['meta','br','hr','link']
         strs=[]
         snum=0
         arrs=text.split('<!--')
@@ -164,17 +164,21 @@ class Command:
         self.count_buttons=0
         self.buttons=[]
         self.cors=[]
-        self.form=dlg_proc(0,DLG_CREATE)   
+        self.form=[dlg_proc(0,DLG_CREATE)]   
+        self.tab_to_form={}
+        self.tab_to_form[ed.get_prop(PROP_TAB_ID)]=self.form[0]
         self.need_action=True
+        self.form_to_toolbar={}
         bg_color=self.get_color()
-        dlg_proc(self.form, DLG_PROP_SET, prop={                       
+        dlg_proc(self.form[0], DLG_PROP_SET, prop={                       
           'h':0,
           'visible':False,
           'color':bg_color,
         })                                              
-        toolbar = dlg_proc(self.form, DLG_CTL_ADD, 'toolbar')
+        toolbar = dlg_proc(self.form[0], DLG_CTL_ADD, 'toolbar')
+        self.form_to_toolbar[self.form[0]]=toolbar
         toolbar_proc(toolbar,TOOLBAR_THEME)
-        dlg_proc(self.form, DLG_CTL_PROP_SET, index=toolbar, prop={
+        dlg_proc(self.form[0], DLG_CTL_PROP_SET, index=toolbar, prop={
           'name': 'tb',
           'x': 0,
           'y': 0,
@@ -184,10 +188,10 @@ class Command:
           #'color': 0x80B080,
         }) 
         
-        self.tb_id = dlg_proc(self.form, DLG_CTL_HANDLE, index=toolbar)
+        self.tb_id = [dlg_proc(self.form[0], DLG_CTL_HANDLE, index=toolbar)]
         self.set_buttons([])
-        dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')                                 
-        dlg_proc(self.form,DLG_SHOW_NONMODAL)
+        dlg_proc(self.form[0],DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')                                 
+        dlg_proc(self.form[0],DLG_SHOW_NONMODAL)
         #dlg_proc(self.form,TREE_THEME)
         toolbar_proc(toolbar,TOOLBAR_THEME)                   
         pass 
@@ -204,12 +208,12 @@ class Command:
         if pattern.fullmatch(lexer):
                correct_lexer=True
         if correct_lexer:
-            dlg_proc(self.form, DLG_PROP_SET, prop={                       
+            dlg_proc(self.form[0], DLG_PROP_SET, prop={                       
                 'h':25,
                 'visible':True,
               })
         else:
-            dlg_proc(self.form, DLG_PROP_SET, prop={                       
+            dlg_proc(self.form[0], DLG_PROP_SET, prop={                       
               'h':0,
               'visible':True,
             })
@@ -221,13 +225,54 @@ class Command:
     
     def on_tab_change(self,ed_self):
         self.on_lexer(ed_self)
-        dlg_proc(self.form,DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')                                 
-        dlg_proc(self.form,DLG_SHOW_NONMODAL)
+                                
+        
+        if ed_self.get_prop(PROP_TAB_ID) in self.tab_to_form:
+            print('exists')
+            print('toolbar id: '+str(self.form_to_toolbar[self.tab_to_form[ed_self.get_prop(PROP_TAB_ID)]]))
+        else:
+            lexer=ed.get_prop(PROP_LEXER_FILE,'')
+            ##
+            if not lexer:return
+            correct_lexer=False
+            pattern=re.compile(self.option_lexers)   
+            if pattern.fullmatch(lexer):
+                   correct_lexer=True
+            if correct_lexer:
+                self.form.append(dlg_proc(0,DLG_CREATE))
+                form_i=len(self.form)-1
+                                                               
+                self.tab_to_form[ed_self.get_prop(PROP_TAB_ID)]=form_i 
+                dlg_proc(self.form[form_i], DLG_PROP_SET, prop={                       
+                    'h':25,
+                    'visible':True,
+                })
+                print(len(self.form))
+                toolbar = dlg_proc(self.form[form_i], DLG_CTL_ADD, 'toolbar')
+                toolbar_proc(toolbar,TOOLBAR_THEME)
+                dlg_proc(self.form[form_i], DLG_CTL_PROP_SET, index=toolbar, prop={
+                   'name': 'tb'+str(form_i),
+                   'x': 0,
+                   'y': 0,
+                   'w': 20,
+                   'h': 40,
+                   'align': ALIGN_TOP,
+                   #'color': 0x80B080,
+                }) 
+                print('created toolbar '+str(toolbar))
+                self.form_to_toolbar[form_i]=toolbar
+                print(len(self.form_to_toolbar))
+                toolbar_proc(toolbar,TOOLBAR_UPDATE)
+                dlg_proc(self.form[form_i],DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')               
+                dlg_proc(self.form[form_i],DLG_SHOW_NONMODAL)        
+                print('creating')
+            print('does not exist') 
         self.on_caret(ed_self)
     
     def on_caret(self, ed_self):
         if self.need_action:
-            self.cors=[]
-            x1,y1,x2,y2=ed_self.get_carets()[0]
-            self.parse_html(ed_self.get_text_substr(0,0,x1,y1))
+            if ed_self.get_prop(PROP_TAB_ID) in self.tab_to_form:
+                self.cors=[]
+                x1,y1,x2,y2=ed_self.get_carets()[0]
+                self.parse_html(ed_self.get_text_substr(0,0,x1,y1))
         self.need_action=True
