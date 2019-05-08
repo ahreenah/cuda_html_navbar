@@ -10,7 +10,7 @@ class Command:
         toolbar_proc(self.tb_id[0], TOOLBAR_ADD_ITEM)
         count = self.count_buttons
         self.count_buttons+=1
-        btn_id = toolbar_proc(self.tb_id[0], TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
+        btn_id = toolbar_proc(self.tb_id[self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]]], TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
         if btn_id:
             self.buttons.append(btn_id)
         def callbackf():
@@ -32,6 +32,12 @@ class Command:
             button_proc(btn_id, BTN_SET_DATA1, callbackf)
     
     def set_buttons(self,buttons):
+        print('setting buttons \n'+
+           'tb_id           : '+str(self.tb_id[-1])+'\n'+
+           'all tb_id       : '+str(self.tb_id)+'\n'+
+           'tab id          : '+str(ed.get_prop(PROP_TAB_ID))+'\n'+
+           'tab to form     : '+str(self.tab_to_form)+'\n'+
+           'form to toolbar : '+str(self.form_to_toolbar))
         j=0
         for i in self.buttons:
             if j>len(buttons):
@@ -63,7 +69,7 @@ class Command:
                 button_proc(self.buttons[j],BTN_SET_DATA1,callbackf)
                 button_proc(self.buttons[j],BTN_SET_TEXT,buttons[j])
             j+=1
-        toolbar_proc(self.tb_id[self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]]], TOOLBAR_UPDATE)
+        toolbar_proc(self.tb_id[-1], TOOLBAR_UPDATE)
     
     def parse_html(self,text):
         ignore_list=['meta','br','hr','link']
@@ -229,7 +235,7 @@ class Command:
         
         if ed_self.get_prop(PROP_TAB_ID) in self.tab_to_form:
             print('exists')
-            print('toolbar id: '+str(self.form_to_toolbar[self.tab_to_form[ed_self.get_prop(PROP_TAB_ID)]]))
+            #print('toolbar id: '+str(self.form_to_toolbar[self.tab_to_form[ed_self.get_prop(PROP_TAB_ID)]]))
         else:
             lexer=ed.get_prop(PROP_LEXER_FILE,'')
             ##
@@ -240,17 +246,21 @@ class Command:
                    correct_lexer=True
             if correct_lexer:
                 self.form.append(dlg_proc(0,DLG_CREATE))
-                form_i=len(self.form)-1
+                form_i=self.form[len(self.form)-1]
                                                                
                 self.tab_to_form[ed_self.get_prop(PROP_TAB_ID)]=form_i 
-                dlg_proc(self.form[form_i], DLG_PROP_SET, prop={                       
+                dlg_proc(self.form[-1], DLG_PROP_SET, prop={                       
                     'h':25,
                     'visible':True,
                 })
+                
                 print(len(self.form))
-                toolbar = dlg_proc(self.form[form_i], DLG_CTL_ADD, 'toolbar')
+                toolbar=dlg_proc(self.form[-1], DLG_CTL_ADD, 'toolbar')
+                dlg_proc(self.form[-1], DLG_CTL_HANDLE, index=toolbar)
+                print('toooooobar '+str(toolbar))
+                self.tb_id.append(dlg_proc(self.form[-1], DLG_CTL_HANDLE, index=toolbar))
                 toolbar_proc(toolbar,TOOLBAR_THEME)
-                dlg_proc(self.form[form_i], DLG_CTL_PROP_SET, index=toolbar, prop={
+                dlg_proc(self.form[-1], DLG_CTL_PROP_SET, index=toolbar, prop={
                    'name': 'tb'+str(form_i),
                    'x': 0,
                    'y': 0,
@@ -260,12 +270,15 @@ class Command:
                    #'color': 0x80B080,
                 }) 
                 print('created toolbar '+str(toolbar))
-                self.form_to_toolbar[form_i]=toolbar
+                self.form_to_toolbar[self.form[-1]]=dlg_proc(self.form[-1], DLG_CTL_HANDLE, index=toolbar)
                 print(len(self.form_to_toolbar))
                 toolbar_proc(toolbar,TOOLBAR_UPDATE)
-                dlg_proc(self.form[form_i],DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')               
-                dlg_proc(self.form[form_i],DLG_SHOW_NONMODAL)        
+                dlg_proc(self.form[-1],DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')               
+                dlg_proc(self.form[-1],DLG_SHOW_NONMODAL)        
                 print('creating')
+                print(self.tab_to_form)
+                print(self.form_to_toolbar)
+                print(self.tb_id)
             print('does not exist') 
         self.on_caret(ed_self)
     
