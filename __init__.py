@@ -7,10 +7,11 @@ fn_config = os.path.join(app_path(APP_DIR_SETTINGS), 'cuda_html_navbar.ini')
 
 class Command:
     def add_button(self,text):
-        toolbar_proc(self.tb_id[0], TOOLBAR_ADD_ITEM)
+        toolbar_proc(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]], TOOLBAR_ADD_ITEM)
         count = self.count_buttons
         self.count_buttons+=1
-        btn_id = toolbar_proc(self.tb_id[self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]]], TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
+        print(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]])
+        btn_id = toolbar_proc(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]], TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
         if btn_id:
             self.buttons.append(btn_id)
         def callbackf():
@@ -33,11 +34,26 @@ class Command:
     
     def set_buttons(self,buttons):
         print('setting buttons \n'+
-           'tb_id           : '+str(self.tb_id[-1])+'\n'+
+           'form_to_tb      : '+str(self.form_to_toolbar)+'\n'+
+           ''+
            'all tb_id       : '+str(self.tb_id)+'\n'+
            'tab id          : '+str(ed.get_prop(PROP_TAB_ID))+'\n'+
            'tab to form     : '+str(self.tab_to_form)+'\n'+
            'form to toolbar : '+str(self.form_to_toolbar))
+        if not (self.tab_to_form[ed.get_prop(PROP_TAB_ID)] in self.form_to_toolbar):
+            tb_i = dlg_proc(self.tab_to_form[ed.get_prop(PROP_TAB_ID)], DLG_CTL_ADD, 'toolbar')
+            self.tb_id.append(dlg_proc(self.tab_to_form[ed.get_prop(PROP_TAB_ID)], DLG_CTL_HANDLE, index=toolbar))
+            self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]]=self.tb_i[-1]
+            dlg_proc(self.form[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]], DLG_CTL_PROP_SET, index=toolbar, prop={
+              'name': 'tb'+str(self.form[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]]),
+              'x': 0,
+              'y': 0,
+              'w': 20,
+              'h': 40,
+              'align': ALIGN_TOP,
+              #'color': 0x80B080,
+            }) 
+        print('tb_id           : '+str(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]])+'\n')
         j=0
         for i in self.buttons:
             if j>len(buttons):
@@ -69,7 +85,7 @@ class Command:
                 button_proc(self.buttons[j],BTN_SET_DATA1,callbackf)
                 button_proc(self.buttons[j],BTN_SET_TEXT,buttons[j])
             j+=1
-        toolbar_proc(self.tb_id[-1], TOOLBAR_UPDATE)
+        toolbar_proc(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]], TOOLBAR_UPDATE)
     
     def parse_html(self,text):
         ignore_list=['meta','br','hr','link']
@@ -182,7 +198,7 @@ class Command:
           'color':bg_color,
         })                                              
         toolbar = dlg_proc(self.form[0], DLG_CTL_ADD, 'toolbar')
-        self.form_to_toolbar[self.form[0]]=toolbar
+        self.form_to_toolbar[self.form[0]]=dlg_proc(self.form[0], DLG_CTL_HANDLE, index=toolbar)
         toolbar_proc(toolbar,TOOLBAR_THEME)
         dlg_proc(self.form[0], DLG_CTL_PROP_SET, index=toolbar, prop={
           'name': 'tb',
@@ -241,26 +257,27 @@ class Command:
             ##
             if not lexer:return
             correct_lexer=False
-            pattern=re.compile(self.option_lexers)   
+            pattern=re.compile(self.option_lexers)
+            print('checking')   
             if pattern.fullmatch(lexer):
                    correct_lexer=True
             if correct_lexer:
                 self.form.append(dlg_proc(0,DLG_CREATE))
-                form_i=self.form[len(self.form)-1]
+                form_i=len(self.form)-1
                                                                
-                self.tab_to_form[ed_self.get_prop(PROP_TAB_ID)]=form_i 
-                dlg_proc(self.form[-1], DLG_PROP_SET, prop={                       
+                self.tab_to_form[ed_self.get_prop(PROP_TAB_ID)]=self.form[form_i] 
+                dlg_proc(self.form[form_i], DLG_PROP_SET, prop={                       
                     'h':25,
                     'visible':True,
                 })
                 
                 print(len(self.form))
-                toolbar=dlg_proc(self.form[-1], DLG_CTL_ADD, 'toolbar')
-                dlg_proc(self.form[-1], DLG_CTL_HANDLE, index=toolbar)
+                toolbar=dlg_proc(self.form[form_i], DLG_CTL_ADD, 'toolbar')
+                dlg_proc(self.form[form_i], DLG_CTL_HANDLE, index=toolbar)
                 print('toooooobar '+str(toolbar))
-                self.tb_id.append(dlg_proc(self.form[-1], DLG_CTL_HANDLE, index=toolbar))
+                self.tb_id.append(dlg_proc(self.form[form_i], DLG_CTL_HANDLE, index=toolbar))
                 toolbar_proc(toolbar,TOOLBAR_THEME)
-                dlg_proc(self.form[-1], DLG_CTL_PROP_SET, index=toolbar, prop={
+                dlg_proc(self.form[form_i], DLG_CTL_PROP_SET, index=toolbar, prop={
                    'name': 'tb'+str(form_i),
                    'x': 0,
                    'y': 0,
@@ -270,11 +287,11 @@ class Command:
                    #'color': 0x80B080,
                 }) 
                 print('created toolbar '+str(toolbar))
-                self.form_to_toolbar[self.form[-1]]=dlg_proc(self.form[-1], DLG_CTL_HANDLE, index=toolbar)
+                self.form_to_toolbar[self.form[form_i]]=dlg_proc(self.form[form_i], DLG_CTL_HANDLE, index=toolbar)
                 print(len(self.form_to_toolbar))
                 toolbar_proc(toolbar,TOOLBAR_UPDATE)
-                dlg_proc(self.form[-1],DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')               
-                dlg_proc(self.form[-1],DLG_SHOW_NONMODAL)        
+                dlg_proc(self.form[form_i],DLG_DOCK, index=ed.get_prop(PROP_HANDLE_PARENT), prop='T')               
+                dlg_proc(self.form[form_i],DLG_SHOW_NONMODAL)        
                 print('creating')
                 print(self.tab_to_form)
                 print(self.form_to_toolbar)
