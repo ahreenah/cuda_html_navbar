@@ -11,13 +11,15 @@ class Command:
         count = self.count_buttons
         self.count_buttons+=1
         print(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]])
+        if not ed.get_prop(PROP_TAB_ID) in self.buttons:
+            self.buttons[ed.get_prop(PROP_TAB_ID)]=[]
         btn_id = toolbar_proc(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]], TOOLBAR_GET_BUTTON_HANDLE, index=count-1)
         if btn_id:
-            self.buttons.append(btn_id)
+            self.buttons[ed.get_prop(PROP_TAB_ID)].append(btn_id)
         def callbackf():
             try:
                 self.need_action=False
-                coord=self.cors[count-1-self.buttons_hidden]
+                coord=self.cors[count-1-self.buttons_hidden[ed.get_prop(PROP_TAB_ID)]]
                 line=ed.get_text_line(coord[0])
                 new_x=coord[1]
                 while new_x>0:
@@ -55,18 +57,21 @@ class Command:
             }) 
         print('tb_id           : '+str(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]])+'\n')
         j=0
-        for i in self.buttons:
+        if not ed.get_prop(PROP_TAB_ID) in self.buttons:
+            self.buttons[ed.get_prop(PROP_TAB_ID)]=[]
+        for i in self.buttons[ed.get_prop(PROP_TAB_ID)]:
             if j>len(buttons):
                 button_proc(i,BTN_SET_VISIBLE,False)
-                self.buttons_hidden+=1
+                self.buttons_hidden[ed.get_prop(PROP_TAB_ID)]+=1
             j+=1
         j=0
         index=0
+        
         for i in buttons:
-            if j>=len(self.buttons):
+            if j>=len(self.buttons[ed.get_prop(PROP_TAB_ID)]):
                 self.add_button(i)
             else:
-                button_proc(self.buttons[j],BTN_SET_VISIBLE,True)
+                button_proc(self.buttons[ed.get_prop(PROP_TAB_ID)][j],BTN_SET_VISIBLE,True)
                 def callbackf(tindex=index):
                     try:
                         self.need_action=False
@@ -82,8 +87,8 @@ class Command:
                     finally:
                         pass
                 index+=1
-                button_proc(self.buttons[j],BTN_SET_DATA1,callbackf)
-                button_proc(self.buttons[j],BTN_SET_TEXT,buttons[j])
+                button_proc(self.buttons[ed.get_prop(PROP_TAB_ID)][j],BTN_SET_DATA1,callbackf)
+                button_proc(self.buttons[ed.get_prop(PROP_TAB_ID)][j],BTN_SET_TEXT,buttons[j])
             j+=1
         toolbar_proc(self.form_to_toolbar[self.tab_to_form[ed.get_prop(PROP_TAB_ID)]], TOOLBAR_UPDATE)
     
@@ -182,9 +187,10 @@ class Command:
     
     def __init__(self):
         self.option_lexers=ini_read(fn_config, 'op', 'lexers', 'HTML.*|XML')
-        self.buttons_hidden=0
+        self.buttons_hidden={ed.get_prop(PROP_TAB_ID):0}
         self.count_buttons=0
-        self.buttons=[]
+        self.buttons={}
+        self.buttons[ed.get_prop(PROP_TAB_ID)]=[]
         self.cors=[]
         self.form=[dlg_proc(0,DLG_CREATE)]   
         self.tab_to_form={}
